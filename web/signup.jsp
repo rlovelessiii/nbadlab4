@@ -11,11 +11,19 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Sign-Up!</title>
         <link rel="stylesheet" href="style.css">
+        <style>
+            body {background-color: ${color}}
+        </style>
     </head>
     <body>
+        <p>Background color: 
+            <a href="/nbadlab5_lab4-fork/membership?action=signup&color=white">White</a>
+            <a href="/nbadlab5_lab4-fork/membership?action=signup&color=red">Red</a>
+            <a href="/nbadlab5_lab4-fork/membership?action=signup&color=blue">Blue</a>
+        </p>
         <h1>Registration Form</h1>
         
-        <form method="post" id="signupForm" action="/Lab_4/membership?action=signup">
+        <form method="post" id="signupForm" action="/nbadlab5_lab4-fork/membership?action=signup">
             
             <label for="name">Name:</label>
             <input type="text" name="name">

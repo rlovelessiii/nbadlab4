@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Stack;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpSession;
 
 /**
  *
@@ -19,31 +21,6 @@ import java.util.Stack;
  */
 public class MembershipControllerServlet extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        String action = request.getParameter("action");
-        
-        if (action.equals("signup")) {
-            getServletContext().getRequestDispatcher("/signup.jsp").forward(request, response);
-        }
-        else {
-            try (PrintWriter out = response.getWriter()) {
-                out.println("Error! the action parameter is required, only signup value is valid.");
-            }
-        }
-    }
-
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
      *
@@ -55,7 +32,25 @@ public class MembershipControllerServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        
+        String action = request.getParameter("action");
+        String pageColor = request.getParameter("color");
+        
+        if (action.equals("signup") || action.equals("profile")) {
+            
+            String cookieName = "backgroundColor";
+            pageColor = backgroundColor(pageColor, cookieName, request.getCookies());
+            Cookie cookie = new Cookie(cookieName, pageColor);
+            cookie.setMaxAge(60*60*24);
+            response.addCookie(cookie);
+            request.setAttribute("color", pageColor);
+            getServletContext().getRequestDispatcher("/" + action + ".jsp").forward(request, response);
+        }
+        else {
+            try (PrintWriter out = response.getWriter()) {
+                out.println("Error! the action parameter is required, only signup value is valid.");
+            }
+        }
     }
 
     /**
@@ -71,8 +66,16 @@ public class MembershipControllerServlet extends HttpServlet {
             throws ServletException, IOException {
         
         String action = request.getParameter("action");
+        String pageColor = request.getParameter("color");
         
         if (action.equals("signup")) {
+            
+            String cookieName = "backgroundColor";
+            pageColor = backgroundColor(pageColor, cookieName, request.getCookies());
+            Cookie cookie = new Cookie(cookieName, pageColor);
+            cookie.setMaxAge(60*60*24);
+            response.addCookie(cookie);
+            request.setAttribute("color", pageColor);
             
             // All parameter attribute names
             String[] paramNames = { "name", "username", "password", "address", "country", "zip", "email", "sex", "about" };
@@ -129,6 +132,7 @@ public class MembershipControllerServlet extends HttpServlet {
                 */
                 
                 if (valid) {
+                    HttpSession session = request.getSession();
                     UserInfo uinf = new UserInfo();
                     uinf.setName(request.getParameter("name"));
                     uinf.setUsername(request.getParameter("username"));
@@ -140,7 +144,7 @@ public class MembershipControllerServlet extends HttpServlet {
                     uinf.setSex(request.getParameter("sex"));
                     uinf.setLanguages(languages);
                     uinf.setAbout(request.getParameter("about"));
-                    request.setAttribute("UserData", uinf);
+                    session.setAttribute("UserInfo", uinf);
                     getServletContext().getRequestDispatcher("/profile.jsp").forward(request, response);
                 }
                 
@@ -171,4 +175,16 @@ public class MembershipControllerServlet extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 
+    private String backgroundColor(String pageColor, String cookieName, Cookie[] cookies) {
+        if (pageColor == null) {
+            for (Cookie cookie: cookies) {
+                if (cookieName.equals(cookie.getName()))
+                    pageColor = cookie.getValue();
+            }
+            if (pageColor == null) {
+                pageColor = "white";
+            }
+        }
+        return pageColor;
+    }
 }
